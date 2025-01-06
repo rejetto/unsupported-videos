@@ -1,4 +1,4 @@
-exports.version = 0.14
+exports.version = 0.15
 exports.apiRequired = 10.3 // api.ctxBelongsTo
 exports.description = "Enable playing of video files not directly supported by the browser. Works only when you click \"show\". This can be heavy on the CPU of the server, as a real-time conversion is started, so please configure restrictions."
 exports.repo = "rejetto/unsupported-videos"

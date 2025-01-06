@@ -27,12 +27,15 @@
             src: props.src + (convert ? '?ffmpeg' : ''),
             onError(err) {
                 const mediaError = document.querySelector('.showing-container .showing')?.error?.code
-                if (!convert && mediaError >= 3) { // 3 and 4 = decoding errors
-                    setConvert(true)
-                    HFS.toast("converting unsupported video format", 'success')
-                }
-                else
-                    props.onError?.(err)
+                if (mediaError >= 3) // 3 and 4 = decoding errors
+                    if (convert)
+                        HFS.toast("video conversion failed", 'error')
+                    else {
+                        setConvert(true)
+                        HFS.toast("unsupported video: converting")
+                        return
+                    }
+                props.onError?.(err)
             },
         })
     }
