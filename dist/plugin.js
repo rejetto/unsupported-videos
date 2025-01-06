@@ -1,4 +1,4 @@
-exports.version = 0.13
+exports.version = 0.14
 exports.apiRequired = 10.3 // api.ctxBelongsTo
 exports.description = "Enable playing of video files not directly supported by the browser. Works only when you click \"show\". This can be heavy on the CPU of the server, as a real-time conversion is started, so please configure restrictions."
 exports.repo = "rejetto/unsupported-videos"
@@ -19,7 +19,7 @@ exports.config = {
         label: "Allowed accounts",
         helperText: "Leave empty to allow every account",
     },
-    ffmpeg_path: { type: 'real_path', helperText: "Specify where FFmpeg is installed. Leave empty if it's in the system path." }
+    ffmpeg_path: { type: 'real_path', fileMask: 'ffmpeg*', helperText: "Specify where FFmpeg is installed. Leave empty if it's in the system path." }
 }
 exports.configDialog = { maxWidth: '25em' }
 
@@ -47,7 +47,7 @@ exports.init = api => {
             if (running.size >= max || maxA && countUsername() >= maxA)
                 return ctx.status = api.Const.HTTP_TOO_MANY_REQUESTS
 
-            function countUsername () {
+            function countUsername() {
                 let ret = 0
                 for (const x of running.values())
                     if (x === username)
