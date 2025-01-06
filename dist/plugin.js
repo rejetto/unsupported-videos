@@ -1,4 +1,4 @@
-exports.version = 0.15
+exports.version = 0.16
 exports.apiRequired = 10.3 // api.ctxBelongsTo
 exports.description = "Enable playing of video files not directly supported by the browser. Works only when you click \"show\". This can be heavy on the CPU of the server, as a real-time conversion is started, so please configure restrictions."
 exports.repo = "rejetto/unsupported-videos"
@@ -26,8 +26,14 @@ exports.configDialog = { maxWidth: '25em' }
 exports.init = api => {
     const running = new Map()
     const { spawn } = require('child_process')
+    const unsub = api.subscribeConfig('ffmpeg_path', v => {
+        spawn(v || 'ffmpeg', ['-version'])
+            .on('spawn', () => api.setError?.('')) // reset
+            .on('error', () => (api.setError || api.log)("FFmpeg not found, please fix plugin's configuration"))
+    })
     return {
         unload () {
+            unsub()
             for (const proc of running.keys())
                 proc.kill('SIGKILL')
         },
