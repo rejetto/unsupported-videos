@@ -1,4 +1,4 @@
-exports.version = 0.21
+exports.version = 0.22
 exports.apiRequired = 10.3 // api.ctxBelongsTo
 exports.description = "Enable playing of video files not directly supported by the browser. Works only when you click \"show\". This can be heavy on the CPU of the server, as a real-time conversion is started, so please configure restrictions."
 exports.repo = "rejetto/unsupported-videos"
@@ -24,12 +24,14 @@ exports.config = {
 exports.configDialog = { maxWidth: '25em' }
 
 exports.init = api => {
+    let downloading
     const running = new Map()
     const { spawn } = api.require('child_process')
     const ffmpegUrl = api.Const.IS_WINDOWS ? 'https://github.com/rejetto/unsupported-videos/releases/download/ffmpeg/ffmpeg-win32-x64.zip'
         : `https://github.com/rejetto/unsupported-videos/releases/download/ffmpeg/ffmpeg-${process.platform}-${process.arch}.zip`
 
     const t = setInterval(() => {
+        if (downloading) return
         spawn(api.getConfig('ffmpeg_path') || 'ffmpeg', ['-version'])
             .on('error', () => (api.setError || api.log)(`FFmpeg not found, please fix plugin's configuration, or download clicking http://localhost:${api.getHfsConfig('port')}/?download-ffmpeg`))
             .on('spawn', () => {
@@ -39,6 +41,7 @@ exports.init = api => {
     }, 5000)
     return {
         unload () {
+            downloading?.destroy()
             clearInterval(t)
             for (const proc of running.keys())
                 proc.kill('SIGKILL')
@@ -52,10 +55,20 @@ exports.init = api => {
                 const p = api.require('path')
                 let where = ''
                 try {
-                    await api.misc.unzip(await api.misc.httpStream(ffmpegUrl), path =>
+                    await api.misc.unzip(downloading = await api.misc.httpStream(ffmpegUrl), path =>
                         /(^|\\|\/)ffmpeg(\.exe)?$/.test(path) && (where = p.join(api.storageDir, p.basename(path))) )
+                    let downloaded = 0
+                    const total = Number(downloading.headers['content-length'])
+                    if (total)
+                        downloading.on('data', chunk => {
+                            res.write(`${(((downloaded += chunk.length) / total) * 100).toFixed(1)}%<br>`)
+                            if (!ctx.req.aborted) return
+                            downloading?.destroy()
+                            res.end('Download aborted')
+                        })
                 }
                 catch(e) { return res.end(`Download failed: ${e}`) }
+                downloading = undefined
                 if (!api.Const.IS_WINDOWS)
                     try { await api.require('fs').promises.chmod(where, 0o744) }
                     catch(e) { return res.end(`chmod failed: ${e}`) }
