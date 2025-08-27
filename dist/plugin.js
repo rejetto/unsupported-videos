@@ -1,5 +1,5 @@
-exports.version = 0.22
-exports.apiRequired = 10.3 // api.ctxBelongsTo
+exports.version = 0.23
+exports.apiRequired = 12.9 // fileShow.Component
 exports.description = "Enable playing of video files not directly supported by the browser. Works only when you click \"show\". This can be heavy on the CPU of the server, as a real-time conversion is started, so please configure restrictions."
 exports.repo = "rejetto/unsupported-videos"
 exports.preview = ["https://github.com/user-attachments/assets/7daaf2c8-9dbd-46f1-93b6-7628c4d1d3b6"]
@@ -21,7 +21,7 @@ exports.config = {
     },
     ffmpeg_path: { type: 'real_path', fileMask: 'ffmpeg*', helperText: "Specify where FFmpeg is installed. Leave empty if it's in the system path." }
 }
-exports.configDialog = { maxWidth: '25em' }
+exports.configDialog = { maxWidth: '40em' }
 
 exports.init = api => {
     let downloading
