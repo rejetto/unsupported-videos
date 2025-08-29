@@ -1,4 +1,4 @@
-exports.version = 0.23
+exports.version = 0.24
 exports.apiRequired = 12.9 // fileShow.Component
 exports.description = "Enable playing of video files not directly supported by the browser. Works only when you click \"show\". This can be heavy on the CPU of the server, as a real-time conversion is started, so please configure restrictions."
 exports.repo = "rejetto/unsupported-videos"

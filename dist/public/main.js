@@ -6,14 +6,13 @@
     HFS.onEvent('fileShow', params => {
         if (!exts.includes(params.entry.ext)) return
         const { Component } = params // save for embedding
-        params.Component = props => {
+        params.Component = React.forwardRef((props, ref) => {
             const [convert, setConvert] = React.useState(false)
             React.useEffect(() => setConvert(false), [props.src])
-            const ref = React.useRef()
             React.useEffect(() => {
-                const was = ref.current
+                const was = ref?.current
                 return () => {
-                    if (ref.current) return
+                    if (ref?.current || !was) return
                     // it was removed from the dom, now do this trick to cause a quicker termination of the request
                     was.removeAttribute('src')
                     was.load()
@@ -36,6 +35,7 @@
                     props.onError?.(err)
                 },
             })
-        }
+        })
+        params.Component.hfs_show_video = true // tell others that we are still a video
     })
 }
