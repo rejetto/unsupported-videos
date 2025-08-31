@@ -1,4 +1,4 @@
-exports.version = 0.24
+exports.version = 0.25
 exports.apiRequired = 12.9 // fileShow.Component
 exports.description = "Enable playing of video files not directly supported by the browser. Works only when you click \"show\". This can be heavy on the CPU of the server, as a real-time conversion is started, so please configure restrictions."
 exports.repo = "rejetto/unsupported-videos"
@@ -25,13 +25,14 @@ exports.configDialog = { maxWidth: '40em' }
 
 exports.init = api => {
     let downloading
-    const running = new Map()
+    const running = new Map() // key=process, value=username
     const { spawn } = api.require('child_process')
     const ffmpegUrl = api.Const.IS_WINDOWS ? 'https://github.com/rejetto/unsupported-videos/releases/download/ffmpeg/ffmpeg-win32-x64.zip'
         : `https://github.com/rejetto/unsupported-videos/releases/download/ffmpeg/ffmpeg-${process.platform}-${process.arch}.zip`
 
     const t = setInterval(() => {
         if (downloading) return
+        // loop until ffmpeg works
         spawn(api.getConfig('ffmpeg_path') || 'ffmpeg', ['-version'])
             .on('error', () => (api.setError || api.log)(`FFmpeg not found, please fix plugin's configuration, or download clicking http://localhost:${api.getHfsConfig('port')}/?download-ffmpeg`))
             .on('spawn', () => {
@@ -40,11 +41,11 @@ exports.init = api => {
             })
     }, 5000)
     return {
-        unload () {
+        unload() {
             downloading?.destroy()
             clearInterval(t)
             for (const proc of running.keys())
-                proc.kill('SIGKILL')
+                terminate(proc)
         },
         middleware: async ctx => {
             if (api.misc.isLocalHost(ctx) && ctx.querystring === 'download-ffmpeg') {
@@ -119,9 +120,14 @@ exports.init = api => {
                 //proc.stderr.on('data', x => console.log('ffmpeg:', String(x)))
                 ctx.type = 'video/mp4'
                 ctx.body = proc.stdout
-                ctx.req.on('end', () => proc.kill('SIGKILL'))
+                ctx.req.on('end', () => terminate(proc))
                 return ctx.status = 200
             }
         }
     }
+}
+
+function terminate(proc) {
+    proc.kill()
+    setTimeout(() => proc.kill('SIGKILL'), 10_000)
 }
