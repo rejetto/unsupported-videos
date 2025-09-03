@@ -1,4 +1,4 @@
-exports.version = 0.25
+exports.version = 0.26
 exports.apiRequired = 12.9 // fileShow.Component
 exports.description = "Enable playing of video files not directly supported by the browser. Works only when you click \"show\". This can be heavy on the CPU of the server, as a real-time conversion is started, so please configure restrictions."
 exports.repo = "rejetto/unsupported-videos"
@@ -19,9 +19,13 @@ exports.config = {
         label: "Allowed accounts",
         helperText: "Leave empty to allow every account",
     },
-    ffmpeg_path: { type: 'real_path', fileMask: 'ffmpeg*', helperText: "Specify where FFmpeg is installed. Leave empty if it's in the system path." }
+    ffmpeg_path: { type: 'real_path', fileMask: 'ffmpeg*', helperText: "Specify where FFmpeg is installed. Leave empty if it's in the system path." },
+    ffmpeg_parameters: { defaultValue: '', helperText: "Additional parameters to pass to FFmpeg" }
 }
 exports.configDialog = { maxWidth: '40em' }
+exports.changelog = [
+    { "version": 0.26, "message": "You can configure additional parameters to pass to FFmpeg" }
+]
 
 exports.init = api => {
     let downloading
@@ -110,6 +114,7 @@ exports.init = api => {
                     '-acodec', 'aac',
                     '-strict', '-2',
                     '-preset', 'superfast',
+                    ...api.getConfig('ffmpeg_parameters').split(' ').filter(Boolean),
                     'pipe:1'
                 ])
                 running.set(proc, username) // register now, but it may never actually start
