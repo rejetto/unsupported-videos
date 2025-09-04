@@ -6,7 +6,7 @@
     HFS.onEvent('fileShow', params => {
         if (!exts.includes(params.entry.ext)) return
         const { Component } = params // save for embedding
-        params.Component = React.forwardRef((props, ref) => {
+        params.Component = HFS.markVideoComponent(React.forwardRef((props, ref) => {
             const [convert, setConvert] = React.useState(false)
             React.useEffect(() => setConvert(false), [props.src])
             React.useEffect(() => {
@@ -35,7 +35,6 @@
                     props.onError?.(err)
                 },
             })
-        })
-        params.Component.hfs_show_video = true // tell others that we are still a video
+        }))
     })
 }

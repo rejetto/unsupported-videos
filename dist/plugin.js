@@ -1,5 +1,5 @@
-exports.version = 0.26
-exports.apiRequired = 12.9 // fileShow.Component
+exports.version = 0.27
+exports.apiRequired = 12.91 // HFS.markVideoComponent
 exports.description = "Enable playing of video files not directly supported by the browser. Works only when you click \"show\". This can be heavy on the CPU of the server, as a real-time conversion is started, so please configure restrictions."
 exports.repo = "rejetto/unsupported-videos"
 exports.preview = ["https://github.com/user-attachments/assets/7daaf2c8-9dbd-46f1-93b6-7628c4d1d3b6"]
@@ -24,6 +24,7 @@ exports.config = {
 }
 exports.configDialog = { maxWidth: '40em' }
 exports.changelog = [
+    { "version": 0.27, "message": "Compatibility with future HFS" },
     { "version": 0.26, "message": "You can configure additional parameters to pass to FFmpeg" }
 ]
 
