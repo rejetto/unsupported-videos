@@ -1,4 +1,4 @@
-exports.version = 0.27
+exports.version = 0.28
 exports.apiRequired = 12.91 // HFS.markVideoComponent
 exports.description = "Enable playing of video files not directly supported by the browser. Works only when you click \"show\". This can be heavy on the CPU of the server, as a real-time conversion is started, so please configure restrictions."
 exports.repo = "rejetto/unsupported-videos"
@@ -24,6 +24,7 @@ exports.config = {
 }
 exports.configDialog = { maxWidth: '40em' }
 exports.changelog = [
+    { "version": 0.28, "message": "Support quoting in the parameters configuration" },
     { "version": 0.27, "message": "Compatibility with future HFS" },
     { "version": 0.26, "message": "You can configure additional parameters to pass to FFmpeg" }
 ]
@@ -115,7 +116,7 @@ exports.init = api => {
                     '-acodec', 'aac',
                     '-strict', '-2',
                     '-preset', 'superfast',
-                    ...api.getConfig('ffmpeg_parameters').split(' ').filter(Boolean),
+                    ...api.getConfig('ffmpeg_parameters').match(/(?:[^\s"']+|"[^"]*"|'[^']*')+/g)?.map(s => s.replace(/^['"]|['"]$/g, '')) || [],
                     'pipe:1'
                 ])
                 running.set(proc, username) // register now, but it may never actually start
