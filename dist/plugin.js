@@ -1,4 +1,4 @@
-exports.version = 0.28
+exports.version = 0.29
 exports.apiRequired = 12.91 // HFS.markVideoComponent
 exports.description = "Enable playing of video files not directly supported by the browser. Works only when you click \"show\". This can be heavy on the CPU of the server, as a real-time conversion is started, so please configure restrictions."
 exports.repo = "rejetto/unsupported-videos"
@@ -24,6 +24,7 @@ exports.config = {
 }
 exports.configDialog = { maxWidth: '40em' }
 exports.changelog = [
+    { "version": 0.29, "message": "Stop FFmpeg when the viewer disconnects" },
     { "version": 0.28, "message": "Support quoting in the parameters configuration" },
     { "version": 0.27, "message": "Compatibility with future HFS" },
     { "version": 0.26, "message": "You can configure additional parameters to pass to FFmpeg" }
@@ -118,16 +119,13 @@ exports.init = api => {
                     '-preset', 'superfast',
                     ...api.getConfig('ffmpeg_parameters').match(/(?:[^\s"']+|"[^"]*"|'[^']*')+/g)?.map(s => s.replace(/^['"]|['"]$/g, '')) || [],
                     'pipe:1'
-                ])
+                ], { stdio: ['ignore', 'pipe', 'ignore'] })
                 running.set(proc, username) // register now, but it may never actually start
-                let confirmed = false
-                proc.on('spawn', () => confirmed = true)
                 proc.on('error', () => running.delete(proc))
                 proc.on('exit', () => running.delete(proc))
-                //proc.stderr.on('data', x => console.log('ffmpeg:', String(x)))
                 ctx.type = 'video/mp4'
                 ctx.body = proc.stdout
-                ctx.req.on('end', () => terminate(proc))
+                ctx.res.once('close', () => terminate(proc))
                 return ctx.status = 200
             }
         }
@@ -135,6 +133,9 @@ exports.init = api => {
 }
 
 function terminate(proc) {
+    if (proc.killed || proc.exitCode !== null) return
     proc.kill()
-    setTimeout(() => proc.kill('SIGKILL'), 10_000)
+    const force = setTimeout(() => proc.kill('SIGKILL'), 10_000)
+    force.unref?.()
+    proc.once('exit', () => clearTimeout(force))
 }
