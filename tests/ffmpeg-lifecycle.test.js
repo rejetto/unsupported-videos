@@ -35,6 +35,8 @@ test('ignores FFmpeg stderr and stops conversion when the response closes', asyn
         socket: { closed: false },
         req: new EventEmitter(),
         res: new EventEmitter(),
+        remove() {},
+        set() {},
     }
 
     try {
