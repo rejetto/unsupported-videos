@@ -5,6 +5,12 @@
     const hlsScript = HFS.getPluginPublic() + 'hls.light.min.js'
     let hlsLoading
 
+    HFS.onEvent('newListEntries', ({ entries }) => {
+        for (const entry of entries)
+            if (!entry.icon && exts.includes(entry.ext))
+                entry.icon = 'video'
+    })
+
     HFS.onEvent('fileShow', params => {
         if (!exts.includes(params.entry.ext)) return
         const { Component } = params // save for embedding

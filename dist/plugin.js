@@ -1,4 +1,4 @@
-exports.version = 0.3
+exports.version = 0.31
 exports.apiRequired = 12.91 // HFS.markVideoComponent
 exports.description = "Enable playing of video files not directly supported by the browser. Works only when you click \"show\". This can be heavy on the CPU of the server, as a real-time conversion is started, so please configure restrictions."
 exports.repo = "rejetto/unsupported-videos"
@@ -24,6 +24,7 @@ exports.config = {
 }
 exports.configDialog = { maxWidth: '40em' }
 exports.changelog = [
+    { "version": 0.31, "message": "Configured extensions now use the video icon" },
     { "version": 0.30, "message": "Seek now supported" },
     { "version": 0.29, "message": "Stop FFmpeg when the viewer disconnects" },
     { "version": 0.28, "message": "Support quoting in the parameters configuration" },
